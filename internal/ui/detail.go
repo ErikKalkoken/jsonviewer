@@ -19,15 +19,18 @@ type detail struct {
 
 	copyValueClipboard *ttwidget.Button
 	u                  *UI
-	valueDisplay       *widget.RichText
+	valueDisplay       *widget.Label
 	valueRaw           string
 }
 
 func newDetail(u *UI) *detail {
+	valueDisplay := widget.NewLabel("")
+	valueDisplay.TextStyle = fyne.TextStyle{Monospace: true}
 	w := &detail{
 		u:            u,
-		valueDisplay: widget.NewRichText(),
+		valueDisplay: valueDisplay,
 	}
+	// w.valueDisplay.Wrapping = fyne.TextWrapWord
 	w.ExtendBaseWidget(w)
 	w.copyValueClipboard = ttwidget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
 		u.app.Clipboard().SetContent(w.valueRaw)
@@ -42,14 +45,14 @@ func (w *detail) CreateRenderer() fyne.WidgetRenderer {
 		nil,
 		nil,
 		nil,
-		w.copyValueClipboard,
+		container.NewVBox(w.copyValueClipboard),
 		container.NewScroll(w.valueDisplay),
 	)
 	return widget.NewSimpleRenderer(c)
 }
 
 func (w *detail) reset() {
-	w.valueDisplay.ParseMarkdown("")
+	w.valueDisplay.SetText("")
 	w.copyValueClipboard.Disable()
 }
 
@@ -86,5 +89,5 @@ func (w *detail) set(uid widget.TreeNodeID) {
 			w.valueRaw = v
 		}
 	}
-	w.valueDisplay.ParseMarkdown(fmt.Sprintf("```\n%s\n```", v))
+	w.valueDisplay.SetText(v)
 }

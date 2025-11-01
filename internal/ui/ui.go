@@ -81,6 +81,7 @@ type UI struct {
 	viewShowSelection   *fyne.MenuItem
 	welcomeMessage      *fyne.Container
 	window              fyne.Window
+	main                *container.Split
 }
 
 // NewUI returns a new UI object.
@@ -120,12 +121,24 @@ func NewUI(app fyne.App) (*UI, error) {
 		u.detail.Hide()
 	}
 
+	u.main = container.NewVSplit(
+		container.NewBorder(
+			container.NewVBox(u.searchBar, u.selection),
+			nil,
+			nil,
+			nil,
+			u.detail,
+		),
+		container.NewStack(u.welcomeMessage, u.tree),
+	)
+	u.main.SetOffset(0.0)
 	c := container.NewBorder(
-		container.NewVBox(u.searchBar, u.selection, u.detail, widget.NewSeparator()),
+		nil,
 		container.NewVBox(widget.NewSeparator(), u.statusBar),
 		nil,
 		nil,
-		container.NewStack(u.welcomeMessage, u.tree))
+		u.main,
+	)
 
 	u.window.SetContent(fynetooltip.AddWindowToolTipLayer(c, u.window.Canvas()))
 	u.window.SetMainMenu(u.makeMenu())
@@ -145,11 +158,10 @@ func NewUI(app fyne.App) (*UI, error) {
 		}
 		u.loadDocument(reader, nil)
 	})
-	s := fyne.Size{
-		Width:  float32(app.Preferences().FloatWithFallback(preferenceLastWindowWidth, 800)),
-		Height: float32(app.Preferences().FloatWithFallback(preferenceLastWindowHeight, 600)),
-	}
-	u.window.Resize(s)
+	u.window.Resize(fyne.NewSize(
+		float32(app.Preferences().FloatWithFallback(preferenceLastWindowWidth, 800)),
+		float32(app.Preferences().FloatWithFallback(preferenceLastWindowHeight, 600)),
+	))
 	u.window.SetOnClosed(func() {
 		app.Preferences().SetFloat(preferenceLastWindowWidth, float64(u.window.Canvas().Size().Width))
 		app.Preferences().SetFloat(preferenceLastWindowHeight, float64(u.window.Canvas().Size().Height))
@@ -165,6 +177,8 @@ func (u *UI) selectElement(uid string) {
 	u.detail.set(uid)
 	u.fileExportFile.Disabled = false
 	u.fileExportClipboard.Disabled = false
+	u.main.SetOffset(0.0)
+	u.main.Refresh()
 	u.window.MainMenu().Refresh()
 }
 
