@@ -42,7 +42,14 @@ func main() {
 	levelFlag := logLevelFlag{value: slog.LevelWarn}
 	flag.Var(&levelFlag, "loglevel", "set log level")
 	versionFlag := flag.Bool("v", false, "show current version")
-	flag.Usage = myUsage
+	flag.Usage = func() {
+		s := "Usage: janice [options] [<inputfile>]\n\n" +
+			"A desktop app for viewing large JSON files.\n" +
+			"For more information please see: https://github.com/ErikKalkoken/janice\n\n" +
+			"Options:\n"
+		fmt.Fprint(flag.CommandLine.Output(), s)
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 	slog.SetLogLoggerLevel(levelFlag.value)
@@ -57,14 +64,4 @@ func main() {
 	}
 	source := flag.Arg(0)
 	u.ShowAndRun(source)
-}
-
-// myUsage writes a custom usage message to configured output stream.
-func myUsage() {
-	s := "Usage: janice [options] [<inputfile>]\n\n" +
-		"A desktop app for viewing large JSON files.\n" +
-		"For more information please see: https://github.com/ErikKalkoken/janice\n\n" +
-		"Options:\n"
-	fmt.Fprint(flag.CommandLine.Output(), s)
-	flag.PrintDefaults()
 }
